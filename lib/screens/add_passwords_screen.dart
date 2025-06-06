@@ -182,9 +182,13 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                     onPressed: _addEntry,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white, // Добавлено это свойство
                       minimumSize: const Size(double.infinity, 50),
                     ),
-                    child: const Text('Сохранить'),
+                    child: const Text(
+                      'Сохранить',
+                      style: TextStyle(color: Colors.white), // Или этот вариант
+                    ),
                   ),
                 ],
               ),
