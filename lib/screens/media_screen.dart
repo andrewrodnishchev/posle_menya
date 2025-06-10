@@ -6,7 +6,6 @@ import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:camera/camera.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
-import 'package:posle_menya/constants.dart';
 import 'package:posle_menya/error_handler.dart';
 
 class MediaScreen extends StatefulWidget {
@@ -41,19 +40,17 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
 
   Future<void> _loadMediaFiles() async {
     final directory = await getApplicationDocumentsDirectory();
-    final files = directory
-        .listSync()
+    final files = (await directory.list().toList())
+        .whereType<File>()
         .where(
           (file) =>
-              file is File &&
-              (file.path.endsWith('.jpg') ||
-                  file.path.endsWith('.png') ||
-                  file.path.endsWith('.mp4') ||
-                  file.path.endsWith('.mov') ||
-                  file.path.endsWith('.mp3') ||
-                  file.path.endsWith('.wav')),
+              file.path.endsWith('.jpg') ||
+              file.path.endsWith('.png') ||
+              file.path.endsWith('.mp4') ||
+              file.path.endsWith('.mov') ||
+              file.path.endsWith('.mp3') ||
+              file.path.endsWith('.wav'),
         )
-        .map((file) => file as File)
         .toList();
 
     setState(() {
@@ -112,34 +109,46 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Добавить медиа'),
-        backgroundColor: AppColors.cardBackground,
+        backgroundColor: Theme.of(context).cardTheme.color,
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(
+              leading: Icon(
                 Icons.photo_library,
-                color: AppColors.primary,
+                color: Theme.of(context).colorScheme.primary,
               ),
-              title: const Text(
+              title: Text(
                 'Из галереи',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
               onTap: () => Navigator.pop(context, MediaAction.gallery),
             ),
             ListTile(
-              leading: const Icon(Icons.camera_alt, color: AppColors.primary),
-              title: const Text(
+              leading: Icon(
+                Icons.camera_alt,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: Text(
                 'Камера',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
               onTap: () => Navigator.pop(context, MediaAction.camera),
             ),
             ListTile(
-              leading: const Icon(Icons.mic, color: AppColors.primary),
-              title: const Text(
+              leading: Icon(
+                Icons.mic,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: Text(
                 'Запись аудио',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
               onTap: () => Navigator.pop(context, MediaAction.audio),
             ),
@@ -191,18 +200,34 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Режим камеры'),
-        backgroundColor: AppColors.cardBackground,
+        backgroundColor: Theme.of(context).cardTheme.color,
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.camera, color: AppColors.primary),
-              title: const Text('Фото', style: TextStyle(color: Colors.white)),
+              leading: Icon(
+                Icons.camera,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: Text(
+                'Фото',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
               onTap: () => Navigator.pop(context, CameraOption.photo),
             ),
             ListTile(
-              leading: const Icon(Icons.videocam, color: AppColors.primary),
-              title: const Text('Видео', style: TextStyle(color: Colors.white)),
+              leading: Icon(
+                Icons.videocam,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: Text(
+                'Видео',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
               onTap: () => Navigator.pop(context, CameraOption.video),
             ),
           ],
@@ -363,7 +388,7 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
                 'Выбрано: ${_selectedFiles.where((element) => element).length}',
               )
             : const Text('Медиафайлы'),
-        backgroundColor: Colors.black,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         actions: [
           if (_mediaFiles.isNotEmpty && !_isSelectionMode)
             IconButton(
@@ -404,7 +429,7 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
           ? _buildEmptyState()
           : _buildMediaGrid(),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         onPressed: _showMediaSourceDialog,
         child: const Icon(Icons.add),
       ),
@@ -415,16 +440,19 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
+        Text(
           'Идет запись...',
-          style: TextStyle(color: Colors.white, fontSize: 20),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 20,
+          ),
         ),
         const SizedBox(height: 20),
         AudioWaveforms(
           size: Size(MediaQuery.of(context).size.width * 0.8, 100),
           recorderController: _audioRecorderController,
-          waveStyle: const WaveStyle(
-            waveColor: AppColors.primary,
+          waveStyle: WaveStyle(
+            waveColor: Theme.of(context).colorScheme.primary,
             showDurationLabel: true,
             spacing: 8,
           ),
@@ -448,15 +476,18 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.video_library_outlined,
             size: 64,
-            color: Colors.white54,
+            color: Theme.of(context).colorScheme.onSurface.withAlpha(127),
           ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'Нет медиафайлов',
-            style: TextStyle(color: Colors.white70, fontSize: 16),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface.withAlpha(180),
+              fontSize: 16,
+            ),
           ),
         ],
       ),
@@ -506,7 +537,7 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
                     frameBuilder: (_, child, frame, __) {
                       if (frame == null) {
                         return Container(
-                          color: AppColors.cardBackground,
+                          color: Theme.of(context).cardTheme.color,
                           child: const Center(
                             child: Icon(Icons.play_arrow, size: 40),
                           ),
@@ -517,7 +548,7 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
                   )
                 else if (isAudio)
                   Container(
-                    color: AppColors.cardBackground,
+                    color: Theme.of(context).cardTheme.color,
                     child: const Center(
                       child: Icon(Icons.audiotrack, size: 40),
                     ),
@@ -526,11 +557,13 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
                   Image.file(file, fit: BoxFit.cover),
 
                 if (isVideo && !isPlaying && !_isSelectionMode)
-                  const Center(
+                  Center(
                     child: Icon(
                       Icons.play_circle_fill,
                       size: 48,
-                      color: Colors.white70,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withAlpha(180),
                     ),
                   ),
 
@@ -561,7 +594,7 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
                         Set<WidgetState> states,
                       ) {
                         if (states.contains(WidgetState.selected)) {
-                          return AppColors.primary;
+                          return Theme.of(context).colorScheme.primary;
                         }
                         return Colors.white;
                       }),

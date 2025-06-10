@@ -78,6 +78,7 @@ class AppErrorHandler {
           textColor: Colors.white,
           onPressed: () {
             // TODO: Добавить логику повторной попытки
+            // Например, можно вызвать колбэк или повторный запрос
           },
         ),
       ),

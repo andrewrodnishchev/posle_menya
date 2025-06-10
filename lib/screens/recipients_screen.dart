@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:posle_menya/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -55,14 +54,11 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
         };
 
         if (_editingIndex != null) {
-          // Обновляем существующий контакт
           _recipients[_editingIndex!] = recipient;
         } else {
-          // Добавляем новый контакт
           _recipients.add(recipient);
         }
 
-        // Очищаем поля после сохранения
         _clearFields();
         _editingIndex = null;
       });
@@ -83,7 +79,6 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
     _editingIndex = index;
 
     if (index != null) {
-      // Заполняем поля данными для редактирования
       final recipient = _recipients[index];
       _nameController.text = recipient['name']!;
       _emailController.text = recipient['email']!;
@@ -97,7 +92,7 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.cardBackground,
+      backgroundColor: Theme.of(context).cardTheme.color,
       builder: (context) => Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -115,8 +110,8 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
                     _editingIndex != null
                         ? 'Редактировать получателя'
                         : 'Добавить получателя',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -125,12 +120,18 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
                   const SizedBox(height: 20),
                   TextFormField(
                     controller: _nameController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'ФИО получателя',
-                      labelStyle: TextStyle(color: AppColors.textSecondary),
-                      border: OutlineInputBorder(),
+                      labelStyle: TextStyle(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                      ),
+                      border: const OutlineInputBorder(),
                     ),
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Введите ФИО получателя';
@@ -141,12 +142,18 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _emailController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Email',
-                      labelStyle: TextStyle(color: AppColors.textSecondary),
-                      border: OutlineInputBorder(),
+                      labelStyle: TextStyle(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                      ),
+                      border: const OutlineInputBorder(),
                     ),
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -162,12 +169,18 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _phoneController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Телефон',
-                      labelStyle: TextStyle(color: AppColors.textSecondary),
-                      border: OutlineInputBorder(),
+                      labelStyle: TextStyle(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                      ),
+                      border: const OutlineInputBorder(),
                     ),
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     keyboardType: TextInputType.phone,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -179,23 +192,35 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _addressController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Адрес',
-                      labelStyle: TextStyle(color: AppColors.textSecondary),
-                      border: OutlineInputBorder(),
+                      labelStyle: TextStyle(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                      ),
+                      border: const OutlineInputBorder(),
                     ),
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     maxLines: 2,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _notesController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Примечания',
-                      labelStyle: TextStyle(color: AppColors.textSecondary),
-                      border: OutlineInputBorder(),
+                      labelStyle: TextStyle(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                      ),
+                      border: const OutlineInputBorder(),
                     ),
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     maxLines: 3,
                   ),
                   const SizedBox(height: 24),
@@ -210,16 +235,18 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
                             Navigator.pop(context);
                           },
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: AppColors.primary),
+                            side: BorderSide(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Отмена',
                             style: TextStyle(
-                              color: AppColors.primary,
+                              color: Theme.of(context).colorScheme.primary,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -231,7 +258,9 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
                         child: ElevatedButton(
                           onPressed: _saveRecipient,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primary,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -239,8 +268,8 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
                           ),
                           child: Text(
                             _editingIndex != null ? 'Обновить' : 'Сохранить',
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -268,24 +297,28 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Получатели'),
-        backgroundColor: Colors.black,
-      ),
+      appBar: AppBar(title: const Text('Получатели')),
       body: _recipients.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.people_alt_outlined,
                     size: 64,
-                    color: Colors.white54,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withAlpha(127),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
+                  Text(
                     'Добавьте получателей для отправки данных',
-                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                    style: TextStyle(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withAlpha(180),
+                      fontSize: 16,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -297,22 +330,24 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
               itemBuilder: (context, index) {
                 final recipient = _recipients[index];
                 return Card(
-                  color: AppColors.cardBackground,
-                  shape: AppStyles.cardShape,
+                  color: Theme.of(context).cardTheme.color,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 12,
                     ),
-                    leading: const Icon(
+                    leading: Icon(
                       Icons.person_outline,
-                      color: AppColors.primary,
+                      color: Theme.of(context).colorScheme.primary,
                       size: 32,
                     ),
                     title: Text(
                       recipient['name']!,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -325,16 +360,20 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
                             padding: const EdgeInsets.only(top: 4),
                             child: Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.email_outlined,
-                                  color: AppColors.textSecondary,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withAlpha(180),
                                   size: 16,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   recipient['email']!,
-                                  style: const TextStyle(
-                                    color: AppColors.textSecondary,
+                                  style: TextStyle(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface.withAlpha(180),
                                   ),
                                 ),
                               ],
@@ -345,16 +384,20 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
                             padding: const EdgeInsets.only(top: 4),
                             child: Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.phone_outlined,
-                                  color: AppColors.textSecondary,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withAlpha(180),
                                   size: 16,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   recipient['phone']!,
-                                  style: const TextStyle(
-                                    color: AppColors.textSecondary,
+                                  style: TextStyle(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface.withAlpha(180),
                                   ),
                                 ),
                               ],
@@ -366,17 +409,21 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.location_on_outlined,
-                                  color: AppColors.textSecondary,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withAlpha(180),
                                   size: 16,
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     recipient['address']!,
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
+                                    style: TextStyle(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface.withAlpha(180),
                                     ),
                                   ),
                                 ),
@@ -389,17 +436,21 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.note_outlined,
-                                  color: AppColors.textSecondary,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withAlpha(180),
                                   size: 16,
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     recipient['notes']!,
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
+                                    style: TextStyle(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface.withAlpha(180),
                                     ),
                                   ),
                                 ),
@@ -433,7 +484,7 @@ class _RecipientsScreenState extends State<RecipientsScreen> {
               },
             ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         onPressed: () => _showEditDialog(),
         child: const Icon(Icons.add),
       ),

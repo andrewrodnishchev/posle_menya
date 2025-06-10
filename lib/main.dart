@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:posle_menya/error_handler.dart';
+import 'package:posle_menya/providers/theme_provider.dart';
 import 'package:posle_menya/screens/welcome_screen.dart';
 import 'package:posle_menya/screens/selection_screen.dart';
 import 'package:posle_menya/screens/add_passwords_screen.dart';
@@ -9,20 +11,21 @@ import 'package:posle_menya/screens/settings_screen.dart';
 import 'package:posle_menya/screens/messages_screen.dart';
 import 'package:posle_menya/screens/media_screen.dart';
 import 'package:posle_menya/screens/recipients_screen.dart';
+import 'package:posle_menya/constants.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Инициализация Hive
   await Hive.initFlutter();
-
-  // Регистрация адаптеров
   Hive.registerAdapter(PasswordEntryAdapter());
-
-  // Настройка обработки ошибок
   AppErrorHandler.setup();
 
-  runApp(const PosleMenyaApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      child: const PosleMenyaApp(),
+    ),
+  );
 }
 
 class PosleMenyaApp extends StatelessWidget {
@@ -30,30 +33,45 @@ class PosleMenyaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return MaterialApp(
       title: 'После меня',
       debugShowCheckedModeBanner: false,
-      builder: (context, child) {
-        ErrorWidget.builder = (errorDetails) {
-          debugPrint(
-            'Widget Error: ${errorDetails.exception}\n${errorDetails.stack}',
-          );
-          return Scaffold(
-            body: Center(
-              child: Text(
-                'Ошибка: ${errorDetails.exception}',
-                style: const TextStyle(color: Colors.red, fontSize: 18),
-              ),
-            ),
-          );
-        };
-        return child!;
-      },
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0F0F0F),
-        colorScheme: const ColorScheme.dark(
-          primary: Colors.deepPurpleAccent,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.light(
+          primary: AppColors.primary,
           secondary: Colors.deepPurple,
+          surface: Colors.grey[100]!,
+          surfaceVariant:
+              Colors.white, // Replaced background with surfaceVariant
+          onSurface: Colors.black,
+        ),
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(
+            fontSize: 36,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+          bodyLarge: TextStyle(fontSize: 18, color: Colors.black87),
+        ),
+        cardTheme: CardThemeData(
+          color: Colors.grey[100],
+          shape: AppStyles.cardShape,
+          elevation: 0,
+          margin: EdgeInsets.zero,
+        ),
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.dark(
+          primary: AppColors.primary,
+          secondary: Colors.deepPurple,
+          surface: AppColors.cardBackground,
+          surfaceVariant:
+              AppColors.background, // Replaced background with surfaceVariant
+          onSurface: Colors.white,
         ),
         textTheme: const TextTheme(
           displayLarge: TextStyle(
@@ -63,15 +81,14 @@ class PosleMenyaApp extends StatelessWidget {
           ),
           bodyLarge: TextStyle(fontSize: 18, color: Colors.white70),
         ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.deepPurpleAccent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
+        cardTheme: CardThemeData(
+          color: AppColors.cardBackground,
+          shape: AppStyles.cardShape,
+          elevation: 0,
+          margin: EdgeInsets.zero,
         ),
       ),
+      themeMode: themeProvider.themeMode,
       onGenerateRoute: (settings) {
         try {
           WidgetBuilder? builder;
@@ -101,7 +118,6 @@ class PosleMenyaApp extends StatelessWidget {
               builder = (_) => const RecipientsScreen();
               break;
             default:
-              debugPrint('⚠️ Unknown route: ${settings.name}');
               builder = (_) => Scaffold(
                 appBar: AppBar(title: const Text('Ошибка')),
                 body: Center(
@@ -125,11 +141,8 @@ class PosleMenyaApp extends StatelessWidget {
                 child: FadeTransition(opacity: animation, child: child),
               );
             },
-            transitionDuration: const Duration(milliseconds: 200),
-            reverseTransitionDuration: const Duration(milliseconds: 200),
           );
-        } catch (e, st) {
-          debugPrint('Route generation error: $e\n$st');
+        } catch (e) {
           return MaterialPageRoute(
             builder: (_) => Scaffold(
               appBar: AppBar(title: const Text('Ошибка')),

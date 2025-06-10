@@ -10,7 +10,7 @@ class WelcomeScreen extends StatelessWidget {
         Navigator.of(context).pushNamed('/selection');
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF0A0A0A), // Чёткий тёмный фон
+        backgroundColor: Theme.of(context).colorScheme.surface,
         body: SafeArea(
           child: Container(
             width: double.infinity,
@@ -24,7 +24,9 @@ class WelcomeScreen extends StatelessWidget {
                   delay: 300,
                   child: Text(
                     'После меня',
-                    style: Theme.of(context).textTheme.displayLarge,
+                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -33,17 +35,21 @@ class WelcomeScreen extends StatelessWidget {
                   delay: 600,
                   child: Text(
                     'Чтобы главное не осталось несказанным.',
-                    style: Theme.of(context).textTheme.bodyLarge,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ),
                 const Spacer(flex: 3),
                 FadeIn(
                   delay: 900,
-                  child: const Text(
+                  child: Text(
                     'Тапни в любое место, чтобы начать',
                     style: TextStyle(
-                      color: Colors.white54,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withAlpha(127),
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                     ),

@@ -8,12 +8,14 @@ class AddFilesScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Добавить файлы'),
-        backgroundColor: Colors.deepPurpleAccent,
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
-      body: const Center(
+      body: Center(
         child: Text(
           'Здесь будет функционал добавления файлов',
-          style: TextStyle(color: Colors.white70),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+          ),
         ),
       ),
     );

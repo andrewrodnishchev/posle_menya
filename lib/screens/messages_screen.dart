@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:posle_menya/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -60,7 +59,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.cardBackground,
+      backgroundColor: Theme.of(context).cardTheme.color,
       builder: (context) => Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -78,8 +77,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     index != null
                         ? 'Редактировать сообщение'
                         : 'Новое сообщение',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -88,12 +87,18 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   const SizedBox(height: 20),
                   TextFormField(
                     controller: _titleController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Заголовок',
-                      labelStyle: TextStyle(color: AppColors.textSecondary),
-                      border: OutlineInputBorder(),
+                      labelStyle: TextStyle(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                      ),
+                      border: const OutlineInputBorder(),
                     ),
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     validator: (value) => value == null || value.isEmpty
                         ? 'Введите заголовок'
                         : null,
@@ -101,12 +106,18 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _recipientController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Получатель (email или телефон)',
-                      labelStyle: TextStyle(color: AppColors.textSecondary),
-                      border: OutlineInputBorder(),
+                      labelStyle: TextStyle(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                      ),
+                      border: const OutlineInputBorder(),
                     ),
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     validator: (value) => value == null || value.isEmpty
                         ? 'Укажите получателя'
                         : null,
@@ -114,12 +125,18 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _contentController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Текст сообщения',
-                      labelStyle: TextStyle(color: AppColors.textSecondary),
-                      border: OutlineInputBorder(),
+                      labelStyle: TextStyle(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                      ),
+                      border: const OutlineInputBorder(),
                     ),
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     maxLines: 5,
                     validator: (value) => value == null || value.isEmpty
                         ? 'Введите текст сообщения'
@@ -133,16 +150,18 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         child: OutlinedButton(
                           onPressed: () => Navigator.pop(context),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: AppColors.primary),
+                            side: BorderSide(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Отмена',
                             style: TextStyle(
-                              color: AppColors.primary,
+                              color: Theme.of(context).colorScheme.primary,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -154,16 +173,18 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         child: ElevatedButton(
                           onPressed: () => _saveMessage(index),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primary,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Сохранить',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.onPrimary,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -222,7 +243,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Сообщения'),
-        backgroundColor: Colors.black,
         actions: [
           if (_messages.isNotEmpty)
             IconButton(
@@ -232,18 +252,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text('Удалить все сообщения?'),
-                    backgroundColor: AppColors.cardBackground,
-                    content: const Text(
-                      'Это действие нельзя отменить',
-                      style: TextStyle(color: Colors.white70),
-                    ),
+                    content: const Text('Это действие нельзя отменить'),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          'Отмена',
-                          style: TextStyle(color: AppColors.primary),
-                        ),
+                        child: const Text('Отмена'),
                       ),
                       TextButton(
                         onPressed: () {
@@ -269,15 +282,22 @@ class _MessagesScreenState extends State<MessagesScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.email_outlined,
                     size: 64,
-                    color: Colors.white54,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withAlpha(127),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'Нет сохранённых сообщений',
-                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                    style: TextStyle(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withAlpha(180),
+                      fontSize: 16,
+                    ),
                   ),
                 ],
               ),
@@ -290,22 +310,24 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 final createdAt = DateTime.parse(message['createdAt']);
 
                 return Card(
-                  color: AppColors.cardBackground,
-                  shape: AppStyles.cardShape,
+                  color: Theme.of(context).cardTheme.color,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 12,
                     ),
-                    leading: const Icon(
+                    leading: Icon(
                       Icons.email_outlined,
-                      color: AppColors.primary,
+                      color: Theme.of(context).colorScheme.primary,
                       size: 32,
                     ),
                     title: Text(
                       message['title'],
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -315,15 +337,19 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         const SizedBox(height: 4),
                         Text(
                           'Для: ${message['recipient']}',
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withAlpha(180),
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Создано: ${createdAt.day}.${createdAt.month}.${createdAt.year}',
-                          style: const TextStyle(
-                            color: Colors.white54,
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withAlpha(127),
                             fontSize: 12,
                           ),
                         ),
@@ -354,7 +380,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
               },
             ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         onPressed: () => _showMessageEditor(),
         child: const Icon(Icons.add),
       ),
@@ -364,7 +390,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   void _showMessageDetails(Map<String, dynamic> message, DateTime createdAt) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.cardBackground,
+      backgroundColor: Theme.of(context).cardTheme.color,
       builder: (context) => Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -374,8 +400,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
             Center(
               child: Text(
                 message['title'],
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -389,14 +415,17 @@ class _MessagesScreenState extends State<MessagesScreen> {
               '${createdAt.day}.${createdAt.month}.${createdAt.year}',
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Текст сообщения:',
-              style: TextStyle(color: Colors.white70, fontSize: 14),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface.withAlpha(180),
+                fontSize: 14,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               message['content'],
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
             const SizedBox(height: 24),
             Row(
@@ -405,7 +434,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.white54),
+                      side: BorderSide(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(127),
+                      ),
                     ),
                     child: const Text('Закрыть'),
                   ),
@@ -424,10 +457,19 @@ class _MessagesScreenState extends State<MessagesScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(color: Colors.white70, fontSize: 14),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withAlpha(180),
+            fontSize: 14,
+          ),
         ),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 16)),
+        Text(
+          value,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 16,
+          ),
+        ),
       ],
     );
   }

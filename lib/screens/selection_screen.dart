@@ -7,16 +7,16 @@ class SelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Выберите, что сохранить',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 22,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         centerTitle: true,
@@ -71,58 +71,97 @@ class SelectionScreen extends StatelessWidget {
     required String subtitle,
     required String route,
   }) {
-    return GestureDetector(
-      onTap: () async {
-        try {
-          await Navigator.of(context).pushNamed(route);
-        } catch (e) {
-          AppErrorHandler.handleNavigationError(context, e);
-        }
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 10),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E1E1E),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            const BoxShadow(
-              color: Color(0x4D000000),
-              blurRadius: 8,
-              offset: Offset(0, 4),
-            ),
-          ],
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isDark
+              ? Theme.of(context).colorScheme.outline.withOpacity(0.5)
+              : Theme.of(context).colorScheme.primary.withOpacity(0.2),
+          width: 1.5,
         ),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.deepPurpleAccent, size: 32),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () async {
+          try {
+            await Navigator.of(context).pushNamed(route);
+          } catch (e) {
+            AppErrorHandler.handleNavigationError(context, e);
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: isDark
+                ? null
+                : LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Theme.of(context).colorScheme.surface,
+                      Theme.of(context).colorScheme.surface.withOpacity(0.9),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(fontSize: 14, color: Colors.white70),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.3),
+                    width: 1,
                   ),
-                ],
+                ),
+                child: Icon(
+                  icon,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 28,
+                ),
               ),
-            ),
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: Colors.white54,
-              size: 18,
-            ),
-          ],
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
+                size: 18,
+              ),
+            ],
+          ),
         ),
       ),
     );

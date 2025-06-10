@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:posle_menya/constants.dart';
+import 'package:posle_menya/providers/theme_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -11,12 +13,14 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   int _selectedTimeOption = 1;
   bool _biometricAuthEnabled = false;
-  bool _darkModeEnabled = true;
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
         title: const Text('Настройки'),
         backgroundColor: Colors.transparent,
@@ -31,9 +35,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
+          Text(
             'Безопасность',
-            style: TextStyle(color: AppColors.textPrimary, fontSize: 18),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 18,
+            ),
           ),
           const SizedBox(height: 12),
           _buildSettingItem(
@@ -46,19 +53,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'Биометрическая аутентификация',
             trailing: Switch(
               value: _biometricAuthEnabled,
-              onChanged: (value) {
-                setState(() {
-                  _biometricAuthEnabled = value;
-                });
-              },
+              onChanged: (value) =>
+                  setState(() => _biometricAuthEnabled = value),
               activeColor: AppColors.primary,
             ),
           ),
 
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'Активация отправки',
-            style: TextStyle(color: AppColors.textPrimary, fontSize: 18),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 18,
+            ),
           ),
           const SizedBox(height: 12),
           _buildSettingItem(
@@ -78,29 +85,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
 
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'Внешний вид',
-            style: TextStyle(color: AppColors.textPrimary, fontSize: 18),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 18,
+            ),
           ),
           const SizedBox(height: 12),
           _buildSettingItem(
             icon: Icons.palette_outlined,
             title: 'Тёмная тема',
             trailing: Switch(
-              value: _darkModeEnabled,
-              onChanged: (value) {
-                setState(() {
-                  _darkModeEnabled = value;
-                });
-              },
+              value: isDarkMode,
+              onChanged: (value) => themeProvider.toggleTheme(value),
               activeColor: AppColors.primary,
             ),
           ),
 
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'О приложении',
-            style: TextStyle(color: AppColors.textPrimary, fontSize: 18),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 18,
+            ),
           ),
           const SizedBox(height: 12),
           _buildSettingItem(
@@ -130,18 +139,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Widget? trailing,
   }) {
     return Card(
-      color: AppColors.cardBackground,
+      color: Theme.of(context).colorScheme.surface,
       shape: AppStyles.cardShape,
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: Icon(icon, color: AppColors.primary),
-        title: Text(title, style: const TextStyle(color: Colors.white)),
+        title: Text(
+          title,
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+        ),
         trailing:
             trailing ??
-            const Icon(
+            Icon(
               Icons.arrow_forward_ios,
               size: 16,
-              color: Colors.white38,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.38),
             ),
         onTap: onTap,
       ),
@@ -156,10 +168,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(
-          'Смена пароля',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Смена пароля'),
         backgroundColor: AppColors.cardBackground,
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -205,7 +214,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              // TODO: Реализовать смену пароля
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -228,10 +236,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            title: const Text(
-              'Настройка времени',
-              style: TextStyle(color: Colors.white),
-            ),
+            title: const Text('Настройка времени'),
             backgroundColor: AppColors.cardBackground,
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -300,9 +305,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  setState(() {
-                    // Сохраняем настройки
-                  });
+                  setState(() {});
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -327,10 +330,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(
-          'Гео-активация',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Гео-активация'),
         backgroundColor: AppColors.cardBackground,
         content: const Text(
           'Приложение отправит данные, если вы долгое время не посещали указанное место',
@@ -353,10 +353,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(
-          'Активация при отсутствии',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Активация при отсутствии'),
         backgroundColor: AppColors.cardBackground,
         content: const Text(
           'Данные будут отправлены, если вы не открывали приложение в течение указанного времени',

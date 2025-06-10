@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:posle_menya/constants.dart';
 
 @HiveType(typeId: 0)
 class PasswordEntry extends HiveObject {
@@ -101,7 +100,6 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
       );
 
       await _passwordsBox.add(entry);
-
       _serviceController.clear();
       _loginController.clear();
       _passwordController.clear();
@@ -134,17 +132,21 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
   }) {
     return TextFormField(
       controller: controller,
-      style: const TextStyle(color: Colors.white),
+      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
       obscureText: obscure,
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.white38),
+        labelStyle: TextStyle(
+          color: Theme.of(context).colorScheme.onSurface.withAlpha(180),
         ),
-        focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.deepPurpleAccent),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.onSurface.withAlpha(76),
+          ),
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
         ),
       ),
       validator: (value) =>
@@ -155,7 +157,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
   void _showAddPasswordScreen() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => Scaffold(
+        builder: (context) => Scaffold(
           appBar: AppBar(
             title: const Text('Добавить пароль'),
             actions: [
@@ -181,14 +183,11 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                   ElevatedButton(
                     onPressed: _addEntry,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white, // Добавлено это свойство
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       minimumSize: const Size(double.infinity, 50),
                     ),
-                    child: const Text(
-                      'Сохранить',
-                      style: TextStyle(color: Colors.white), // Или этот вариант
-                    ),
+                    child: const Text('Сохранить'),
                   ),
                 ],
               ),
@@ -203,8 +202,8 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
     final entry = _passwordsBox.getAt(index)!;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.cardBackground,
-      builder: (_) => Padding(
+      backgroundColor: Theme.of(context).cardTheme.color,
+      builder: (context) => Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -213,10 +212,10 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
             Center(
               child: Text(
                 entry.service,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ),
@@ -236,7 +235,11 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                   child: OutlinedButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.white54),
+                      side: BorderSide(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(127),
+                      ),
                     ),
                     child: const Text('Закрыть'),
                   ),
@@ -268,10 +271,19 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(color: Colors.white54, fontSize: 14),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withAlpha(127),
+            fontSize: 14,
+          ),
         ),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 16)),
+        Text(
+          value,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 16,
+          ),
+        ),
       ],
     );
   }
@@ -288,7 +300,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: const Text('Пароли и логины'),
         actions: [
@@ -298,7 +310,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
               onPressed: () {
                 showDialog(
                   context: context,
-                  builder: (_) => AlertDialog(
+                  builder: (context) => AlertDialog(
                     title: const Text('Удалить все пароли?'),
                     content: const Text('Это действие нельзя отменить'),
                     actions: [
@@ -324,7 +336,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         onPressed: _showAddPasswordScreen,
         child: const Icon(Icons.add),
       ),
@@ -334,12 +346,22 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.lock_outline, size: 64, color: Colors.white54),
-                  SizedBox(height: 16),
+                children: [
+                  Icon(
+                    Icons.lock_outline,
+                    size: 64,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withAlpha(127),
+                  ),
+                  const SizedBox(height: 16),
                   Text(
                     'Нет сохранённых паролей',
-                    style: TextStyle(color: Colors.white54),
+                    style: TextStyle(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withAlpha(127),
+                    ),
                   ),
                 ],
               ),
@@ -353,26 +375,32 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                   itemBuilder: (context, index) {
                     final entry = box.getAt(index)!;
                     return Card(
-                      color: AppColors.cardBackground,
+                      color: Theme.of(context).cardTheme.color,
                       margin: const EdgeInsets.symmetric(vertical: 8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ListTile(
-                        leading: const Icon(
+                        leading: Icon(
                           Icons.lock_outline,
-                          color: Colors.deepPurpleAccent,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                         title: Text(
                           entry.service,
-                          style: const TextStyle(color: Colors.white),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               entry.login,
-                              style: const TextStyle(color: Colors.white70),
+                              style: TextStyle(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withAlpha(180),
+                              ),
                             ),
                             Row(
                               children: [
@@ -381,8 +409,10 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                                     _passwordVisible[index]
                                         ? entry.password
                                         : '••••••••',
-                                    style: const TextStyle(
-                                      color: Colors.white70,
+                                    style: TextStyle(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface.withAlpha(180),
                                     ),
                                   ),
                                 ),
@@ -391,7 +421,9 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                                     _passwordVisible[index]
                                         ? Icons.visibility_off
                                         : Icons.visibility,
-                                    color: Colors.white54,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface.withAlpha(127),
                                     size: 20,
                                   ),
                                   onPressed: () {
