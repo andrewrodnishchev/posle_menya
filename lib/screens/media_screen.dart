@@ -104,72 +104,109 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  Future<void> _showMediaSourceDialog() async {
-    final action = await showDialog<MediaAction>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Добавить медиа'),
-        backgroundColor: Theme.of(context).cardTheme.color,
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(
-                Icons.photo_library,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              title: Text(
-                'Из галереи',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-              onTap: () => Navigator.pop(context, MediaAction.gallery),
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.camera_alt,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              title: Text(
-                'Камера',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-              onTap: () => Navigator.pop(context, MediaAction.camera),
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.mic,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              title: Text(
-                'Запись аудио',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-              onTap: () => Navigator.pop(context, MediaAction.audio),
-            ),
-          ],
+  Widget _buildMediaSourceDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Dialog(
+      backgroundColor: Theme.of(context).cardTheme.color,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isDark
+              ? Theme.of(context).colorScheme.outline.withOpacity(0.5)
+              : Theme.of(context).colorScheme.primary.withOpacity(0.2),
+          width: 1.5,
         ),
       ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              'Добавить медиа',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          ),
+          _buildDialogOption(
+            icon: Icons.photo_library,
+            title: 'Из галереи',
+            onTap: () {
+              Navigator.pop(context);
+              _pickFromGallery();
+            },
+          ),
+          _buildDialogOption(
+            icon: Icons.camera_alt,
+            title: 'Камера',
+            onTap: () {
+              Navigator.pop(context);
+              _showCameraOptions();
+            },
+          ),
+          _buildDialogOption(
+            icon: Icons.mic,
+            title: 'Запись аудио',
+            onTap: () {
+              Navigator.pop(context);
+              _handleAudioRecording();
+            },
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
     );
+  }
 
-    if (action == null) return;
-
-    switch (action) {
-      case MediaAction.gallery:
-        await _pickFromGallery();
-        break;
-      case MediaAction.camera:
-        await _showCameraOptions();
-        break;
-      case MediaAction.audio:
-        await _handleAudioRecording();
-        break;
-    }
+  Widget _buildDialogOption({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 0,
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: Icon(
+            icon,
+            color: Theme.of(context).colorScheme.primary,
+            size: 24,
+          ),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+        ),
+        trailing: Icon(
+          Icons.arrow_forward_ios_rounded,
+          size: 16,
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+        ),
+        onTap: onTap,
+      ),
+    );
   }
 
   Future<void> _pickFromGallery() async {
@@ -188,60 +225,71 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
     }
   }
 
+  Widget _buildCameraOptionsDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Dialog(
+      backgroundColor: Theme.of(context).cardTheme.color,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isDark
+              ? Theme.of(context).colorScheme.outline.withOpacity(0.5)
+              : Theme.of(context).colorScheme.primary.withOpacity(0.2),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              'Режим камеры',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          ),
+          _buildDialogOption(
+            icon: Icons.camera,
+            title: 'Фото',
+            onTap: () {
+              Navigator.pop(context);
+              _takePhoto();
+            },
+          ),
+          _buildDialogOption(
+            icon: Icons.videocam,
+            title: 'Видео',
+            onTap: () {
+              Navigator.pop(context);
+              _recordVideo();
+            },
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
   Future<void> _showCameraOptions() async {
     if (!_isCameraInitialized) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Камера не инициализирована')),
+        SnackBar(
+          content: const Text('Камера не инициализирована'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
       );
       return;
     }
 
-    final option = await showDialog<CameraOption>(
+    await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Режим камеры'),
-        backgroundColor: Theme.of(context).cardTheme.color,
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(
-                Icons.camera,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              title: Text(
-                'Фото',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-              onTap: () => Navigator.pop(context, CameraOption.photo),
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.videocam,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              title: Text(
-                'Видео',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-              onTap: () => Navigator.pop(context, CameraOption.video),
-            ),
-          ],
-        ),
-      ),
+      builder: (context) => _buildCameraOptionsDialog(),
     );
-
-    if (option == null) return;
-
-    if (option == CameraOption.photo) {
-      await _takePhoto();
-    } else {
-      await _recordVideo();
-    }
   }
 
   Future<void> _takePhoto() async {
@@ -381,18 +429,31 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: _isSelectionMode
-            ? Text(
-                'Выбрано: ${_selectedFiles.where((element) => element).length}',
-              )
-            : const Text('Медиафайлы'),
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          _isSelectionMode
+              ? 'Выбрано: ${_selectedFiles.where((element) => element).length}'
+              : 'Видео и аудио',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        centerTitle: true,
         actions: [
           if (_mediaFiles.isNotEmpty && !_isSelectionMode)
             IconButton(
-              icon: const Icon(Icons.check_box_outlined),
+              icon: Icon(
+                Icons.check_box_outlined,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
               onPressed: () {
                 setState(() {
                   _isSelectionMode = true;
@@ -405,12 +466,18 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
             ),
           if (_isSelectionMode)
             IconButton(
-              icon: const Icon(Icons.delete_outline),
+              icon: Icon(
+                Icons.delete_outline,
+                color: Theme.of(context).colorScheme.error,
+              ),
               onPressed: _deleteSelectedFiles,
             ),
           if (_isSelectionMode)
             IconButton(
-              icon: const Icon(Icons.close),
+              icon: Icon(
+                Icons.close,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
               onPressed: () {
                 setState(() {
                   _isSelectionMode = false;
@@ -430,7 +497,10 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
           : _buildMediaGrid(),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Theme.of(context).colorScheme.primary,
-        onPressed: _showMediaSourceDialog,
+        onPressed: () => showDialog(
+          context: context,
+          builder: (context) => _buildMediaSourceDialog(),
+        ),
         child: const Icon(Icons.add),
       ),
     );
@@ -512,105 +582,144 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
         final isAudio =
             file.path.endsWith('.mp3') || file.path.endsWith('.wav');
 
-        return GestureDetector(
-          onTap: () => _playVideo(file, index),
-          onLongPress: () {
-            setState(() {
-              _isSelectionMode = true;
-              _selectedFiles[index] = true;
-            });
-          },
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (isVideo && isPlaying && _videoController != null)
-                  AspectRatio(
-                    aspectRatio: _videoController!.value.aspectRatio,
-                    child: VideoPlayer(_videoController!),
-                  )
-                else if (isVideo)
-                  Image.file(
-                    file,
-                    fit: BoxFit.cover,
-                    frameBuilder: (_, child, frame, __) {
-                      if (frame == null) {
-                        return Container(
-                          color: Theme.of(context).cardTheme.color,
-                          child: const Center(
-                            child: Icon(Icons.play_arrow, size: 40),
-                          ),
-                        );
-                      }
-                      return child;
-                    },
-                  )
-                else if (isAudio)
-                  Container(
-                    color: Theme.of(context).cardTheme.color,
-                    child: const Center(
-                      child: Icon(Icons.audiotrack, size: 40),
-                    ),
-                  )
-                else
-                  Image.file(file, fit: BoxFit.cover),
-
-                if (isVideo && !isPlaying && !_isSelectionMode)
-                  Center(
-                    child: Icon(
-                      Icons.play_circle_fill,
-                      size: 48,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withAlpha(180),
-                    ),
-                  ),
-
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    color: Colors.black54,
-                    child: Text(
-                      file.path.split('/').last,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ),
-
-                if (_isSelectionMode)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Checkbox(
-                      value: _selectedFiles[index],
-                      onChanged: (value) => _toggleFileSelection(index),
-                      fillColor: WidgetStateProperty.resolveWith<Color>((
-                        Set<WidgetState> states,
-                      ) {
-                        if (states.contains(WidgetState.selected)) {
-                          return Theme.of(context).colorScheme.primary;
+        return Card(
+          margin: EdgeInsets.zero,
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+              width: 1,
+            ),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => _playVideo(file, index),
+            onLongPress: () {
+              setState(() {
+                _isSelectionMode = true;
+                _selectedFiles[index] = true;
+              });
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (isVideo && isPlaying && _videoController != null)
+                    AspectRatio(
+                      aspectRatio: _videoController!.value.aspectRatio,
+                      child: VideoPlayer(_videoController!),
+                    )
+                  else if (isVideo)
+                    Image.file(
+                      file,
+                      fit: BoxFit.cover,
+                      frameBuilder: (_, child, frame, __) {
+                        if (frame == null) {
+                          return Container(
+                            color: Theme.of(context).cardTheme.color,
+                            child: Center(
+                              child: Icon(
+                                Icons.play_arrow,
+                                size: 40,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          );
                         }
-                        return Colors.white;
-                      }),
+                        return child;
+                      },
+                    )
+                  else if (isAudio)
+                    Container(
+                      color: Theme.of(context).cardTheme.color,
+                      child: Center(
+                        child: Icon(
+                          Icons.audiotrack,
+                          size: 40,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    )
+                  else
+                    Image.file(file, fit: BoxFit.cover),
+
+                  if (isVideo && !isPlaying && !_isSelectionMode)
+                    Center(
+                      child: Icon(
+                        Icons.play_circle_fill,
+                        size: 48,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                      ),
+                    ),
+
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.8),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                      child: Text(
+                        file.path.split('/').last,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
 
-                if (isPlaying && !_isSelectionMode)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: IconButton(
-                      icon: const Icon(Icons.stop, color: Colors.white),
-                      onPressed: () => _playVideo(file, index),
+                  if (_isSelectionMode)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Checkbox(
+                          value: _selectedFiles[index],
+                          onChanged: (value) => _toggleFileSelection(index),
+                          fillColor: WidgetStateProperty.resolveWith<Color>((
+                            Set<WidgetState> states,
+                          ) {
+                            if (states.contains(WidgetState.selected)) {
+                              return Theme.of(context).colorScheme.primary;
+                            }
+                            return Theme.of(context).colorScheme.surface;
+                          }),
+                          shape: const CircleBorder(),
+                        ),
+                      ),
                     ),
-                  ),
-              ],
+
+                  if (isPlaying && !_isSelectionMode)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.stop,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        onPressed: () => _playVideo(file, index),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         );
@@ -618,7 +727,3 @@ class _MediaScreenState extends State<MediaScreen> with WidgetsBindingObserver {
     );
   }
 }
-
-enum MediaAction { gallery, camera, audio }
-
-enum CameraOption { photo, video }

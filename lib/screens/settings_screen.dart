@@ -1,7 +1,9 @@
+// ✅ settings_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:posle_menya/constants.dart';
 import 'package:posle_menya/providers/theme_provider.dart';
+import 'package:posle_menya/services/secure_storage_service.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -11,218 +13,86 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  int _selectedTimeOption = 1;
   bool _biometricAuthEnabled = false;
+  bool _pinEnabled = true;
+  String _appVersion = '';
 
   @override
-  Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.isDarkMode;
-
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
-      appBar: AppBar(
-        title: const Text('Настройки'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            'Безопасность',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-              fontSize: 18,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildSettingItem(
-            icon: Icons.lock_outline,
-            title: 'Сменить мастер-пароль',
-            onTap: () => _showPasswordChangeDialog(context),
-          ),
-          _buildSettingItem(
-            icon: Icons.fingerprint,
-            title: 'Биометрическая аутентификация',
-            trailing: Switch(
-              value: _biometricAuthEnabled,
-              onChanged: (value) =>
-                  setState(() => _biometricAuthEnabled = value),
-              activeColor: AppColors.primary,
-            ),
-          ),
-
-          const SizedBox(height: 24),
-          Text(
-            'Активация отправки',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-              fontSize: 18,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildSettingItem(
-            icon: Icons.timer_outlined,
-            title: 'Отправка по времени',
-            onTap: () => _showTimeSettingsDialog(context),
-          ),
-          _buildSettingItem(
-            icon: Icons.location_on_outlined,
-            title: 'Гео-активация',
-            onTap: () => _showLocationSettings(context),
-          ),
-          _buildSettingItem(
-            icon: Icons.sensor_door_outlined,
-            title: 'Активация при отсутствии',
-            onTap: () => _showInactivitySettings(context),
-          ),
-
-          const SizedBox(height: 24),
-          Text(
-            'Внешний вид',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-              fontSize: 18,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildSettingItem(
-            icon: Icons.palette_outlined,
-            title: 'Тёмная тема',
-            trailing: Switch(
-              value: isDarkMode,
-              onChanged: (value) => themeProvider.toggleTheme(value),
-              activeColor: AppColors.primary,
-            ),
-          ),
-
-          const SizedBox(height: 24),
-          Text(
-            'О приложении',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-              fontSize: 18,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildSettingItem(
-            icon: Icons.info_outline,
-            title: 'Версия 1.0.0',
-            onTap: () {},
-          ),
-          _buildSettingItem(
-            icon: Icons.privacy_tip_outlined,
-            title: 'Политика конфиденциальности',
-            onTap: () => _showPrivacyPolicy(context),
-          ),
-          _buildSettingItem(
-            icon: Icons.help_outline,
-            title: 'Помощь и поддержка',
-            onTap: () => _showHelpScreen(context),
-          ),
-        ],
-      ),
-    );
+  void initState() {
+    super.initState();
+    _loadSettings();
+    _loadAppVersion();
   }
 
-  Widget _buildSettingItem({
-    required IconData icon,
-    required String title,
-    VoidCallback? onTap,
-    Widget? trailing,
-  }) {
-    return Card(
-      color: Theme.of(context).colorScheme.surface,
-      shape: AppStyles.cardShape,
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Icon(icon, color: AppColors.primary),
-        title: Text(
-          title,
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-        ),
-        trailing:
-            trailing ??
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.38),
-            ),
-        onTap: onTap,
-      ),
-    );
+  Future<void> _loadSettings() async {
+    final bio = await SecureStorageService.getUseBiometrics();
+    final pin = await SecureStorageService.getUsePin();
+    if (mounted) {
+      setState(() {
+        _biometricAuthEnabled = bio;
+        _pinEnabled = pin;
+      });
+    }
   }
 
-  void _showPasswordChangeDialog(BuildContext context) {
-    final oldPasswordController = TextEditingController();
-    final newPasswordController = TextEditingController();
-    final confirmPasswordController = TextEditingController();
+  Future<void> _loadAppVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _appVersion = '${info.version} (${info.buildNumber})';
+      });
+    }
+  }
 
-    showDialog(
+  Future<void> _showChangePinDialog(BuildContext context) async {
+    final currentPinController = TextEditingController();
+    final newPinController = TextEditingController();
+
+    await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Смена пароля'),
-        backgroundColor: AppColors.cardBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Сменить PIN-код'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              controller: oldPasswordController,
+              controller: currentPinController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Текущий пароль',
-                labelStyle: TextStyle(color: AppColors.textSecondary),
-              ),
-              style: const TextStyle(color: Colors.white),
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Текущий PIN'),
             ),
             const SizedBox(height: 12),
             TextField(
-              controller: newPasswordController,
+              controller: newPinController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Новый пароль',
-                labelStyle: TextStyle(color: AppColors.textSecondary),
-              ),
-              style: const TextStyle(color: Colors.white),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: confirmPasswordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Подтвердите пароль',
-                labelStyle: TextStyle(color: AppColors.textSecondary),
-              ),
-              style: const TextStyle(color: Colors.white),
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Новый PIN'),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Отмена',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
+            child: const Text('Отмена'),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Пароль успешно изменён'),
-                  backgroundColor: Colors.green,
-                ),
-              );
+            onPressed: () async {
+              final oldPin = await SecureStorageService.getPinCode();
+              if (currentPinController.text == oldPin) {
+                await SecureStorageService.setPinCode(newPinController.text);
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('PIN-код обновлён')),
+                  );
+                }
+              } else if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Неверный текущий PIN')),
+                );
+              }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             child: const Text('Сохранить'),
           ),
         ],
@@ -230,153 +100,174 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showTimeSettingsDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Настройка времени'),
-            backgroundColor: AppColors.cardBackground,
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                RadioListTile<int>(
-                  title: const Text(
-                    'Через 1 месяц',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  value: 1,
-                  groupValue: _selectedTimeOption,
-                  onChanged: (value) =>
-                      setState(() => _selectedTimeOption = value!),
-                  activeColor: AppColors.primary,
-                ),
-                RadioListTile<int>(
-                  title: const Text(
-                    'Через 3 месяца',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  value: 2,
-                  groupValue: _selectedTimeOption,
-                  onChanged: (value) =>
-                      setState(() => _selectedTimeOption = value!),
-                  activeColor: AppColors.primary,
-                ),
-                RadioListTile<int>(
-                  title: const Text(
-                    'Через 6 месяцев',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  value: 3,
-                  groupValue: _selectedTimeOption,
-                  onChanged: (value) =>
-                      setState(() => _selectedTimeOption = value!),
-                  activeColor: AppColors.primary,
-                ),
-                RadioListTile<int>(
-                  title: const Text(
-                    'Кастомный период',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  value: 4,
-                  groupValue: _selectedTimeOption,
-                  onChanged: (value) =>
-                      setState(() => _selectedTimeOption = value!),
-                  activeColor: AppColors.primary,
-                ),
-                if (_selectedTimeOption == 4) ...[
-                  const SizedBox(height: 12),
-                  const TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Количество дней',
-                      labelStyle: TextStyle(color: AppColors.textSecondary),
-                    ),
-                    style: TextStyle(color: Colors.white),
-                    keyboardType: TextInputType.number,
-                  ),
-                ],
+  Widget _buildSettingCard({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    Widget? trailing,
+    VoidCallback? onTap,
+  }) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+          width: 1.5,
+        ),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Theme.of(context).colorScheme.surface,
+                Theme.of(context).colorScheme.surface.withOpacity(0.9),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Отмена'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {});
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Настройки сохранены'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.3),
+                    width: 1,
+                  ),
                 ),
-                child: const Text('Сохранить'),
+                child: Icon(
+                  icon,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 24,
+                ),
               ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              if (trailing != null) trailing,
+              if (onTap != null && trailing == null)
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.6),
+                  size: 16,
+                ),
             ],
-          );
-        },
-      ),
-    );
-  }
-
-  void _showLocationSettings(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Гео-активация'),
-        backgroundColor: AppColors.cardBackground,
-        content: const Text(
-          'Приложение отправит данные, если вы долгое время не посещали указанное место',
-          style: TextStyle(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Понятно',
-              style: TextStyle(color: AppColors.primary),
-            ),
           ),
-        ],
-      ),
-    );
-  }
-
-  void _showInactivitySettings(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Активация при отсутствии'),
-        backgroundColor: AppColors.cardBackground,
-        content: const Text(
-          'Данные будут отправлены, если вы не открывали приложение в течение указанного времени',
-          style: TextStyle(color: AppColors.textSecondary),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Закрыть',
-              style: TextStyle(color: AppColors.primary),
-            ),
-          ),
-        ],
       ),
     );
   }
 
-  void _showPrivacyPolicy(BuildContext context) {
-    // TODO: Реализовать экран с политикой конфиденциальности
-  }
+  @override
+  Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
 
-  void _showHelpScreen(BuildContext context) {
-    // TODO: Реализовать экран помощи
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Настройки',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Безопасность',
+              style: Theme.of(context).textTheme.labelMedium,
+            ),
+            const SizedBox(height: 8),
+            _buildSettingCard(
+              context: context,
+              icon: Icons.pin,
+              title: 'Сменить PIN-код',
+              onTap: () => _showChangePinDialog(context),
+            ),
+            _buildSettingCard(
+              context: context,
+              icon: Icons.lock_open_outlined,
+              title: 'Требовать PIN при входе',
+              trailing: Switch(
+                value: _pinEnabled,
+                onChanged: (value) async {
+                  setState(() => _pinEnabled = value);
+                  await SecureStorageService.setUsePin(value);
+                },
+                activeColor: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            _buildSettingCard(
+              context: context,
+              icon: Icons.fingerprint,
+              title: 'Биометрическая аутентификация',
+              trailing: Switch(
+                value: _biometricAuthEnabled,
+                onChanged: (value) async {
+                  setState(() => _biometricAuthEnabled = value);
+                  await SecureStorageService.setUseBiometrics(value);
+                },
+                activeColor: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text('Внешний вид', style: Theme.of(context).textTheme.labelMedium),
+            const SizedBox(height: 8),
+            _buildSettingCard(
+              context: context,
+              icon: Icons.palette_outlined,
+              title: 'Тёмная тема',
+              trailing: Switch(
+                value: isDarkMode,
+                onChanged: (value) => themeProvider.toggleTheme(value),
+                activeColor: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 32),
+            Center(
+              child: Text(
+                'Версия приложения: $_appVersion',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.5),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

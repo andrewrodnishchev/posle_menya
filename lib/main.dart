@@ -1,35 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:posle_menya/error_handler.dart';
-import 'package:posle_menya/providers/theme_provider.dart';
-import 'package:posle_menya/screens/welcome_screen.dart';
-import 'package:posle_menya/screens/selection_screen.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
 import 'package:posle_menya/screens/add_passwords_screen.dart';
-import 'package:posle_menya/screens/add_files_screen.dart';
-import 'package:posle_menya/screens/settings_screen.dart';
-import 'package:posle_menya/screens/messages_screen.dart';
+import 'package:posle_menya/screens/auth_gate_screen.dart';
 import 'package:posle_menya/screens/media_screen.dart';
+import 'package:posle_menya/screens/messages_screen.dart';
+import 'package:posle_menya/screens/pin_code_screen.dart';
 import 'package:posle_menya/screens/recipients_screen.dart';
-import 'package:posle_menya/constants.dart';
+import 'package:posle_menya/screens/selection_screen.dart';
+import 'package:posle_menya/screens/settings_screen.dart';
+import 'package:posle_menya/screens/welcome_screen.dart';
+import 'package:posle_menya/providers/theme_provider.dart';
+import 'package:posle_menya/error_handler.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter(); // Инициализация Hive
+  Hive.registerAdapter(PasswordEntryAdapter()); // Регистрация адаптера
 
-  await Hive.initFlutter();
-  Hive.registerAdapter(PasswordEntryAdapter());
   AppErrorHandler.setup();
 
   runApp(
     ChangeNotifierProvider(
-      create: (context) => ThemeProvider(),
-      child: const PosleMenyaApp(),
+      create: (_) => ThemeProvider(),
+      child: const MyApp(),
     ),
   );
 }
 
-class PosleMenyaApp extends StatelessWidget {
-  const PosleMenyaApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -38,14 +39,14 @@ class PosleMenyaApp extends StatelessWidget {
     return MaterialApp(
       title: 'После меня',
       debugShowCheckedModeBanner: false,
+      themeMode: themeProvider.themeMode,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.light(
-          primary: AppColors.primary,
+          primary: const Color(0xFF6200EE),
           secondary: Colors.deepPurple,
           surface: Colors.grey[100]!,
-          surfaceVariant:
-              Colors.white, // Replaced background with surfaceVariant
+          surfaceContainerHighest: Colors.white,
           onSurface: Colors.black,
         ),
         textTheme: const TextTheme(
@@ -58,7 +59,9 @@ class PosleMenyaApp extends StatelessWidget {
         ),
         cardTheme: CardThemeData(
           color: Colors.grey[100],
-          shape: AppStyles.cardShape,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           elevation: 0,
           margin: EdgeInsets.zero,
         ),
@@ -66,11 +69,10 @@ class PosleMenyaApp extends StatelessWidget {
       darkTheme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.dark(
-          primary: AppColors.primary,
+          primary: const Color(0xFF6200EE),
           secondary: Colors.deepPurple,
-          surface: AppColors.cardBackground,
-          surfaceVariant:
-              AppColors.background, // Replaced background with surfaceVariant
+          surface: const Color(0xFF1E1E1E),
+          surfaceContainerHighest: const Color(0xFF121212),
           onSurface: Colors.white,
         ),
         textTheme: const TextTheme(
@@ -82,76 +84,32 @@ class PosleMenyaApp extends StatelessWidget {
           bodyLarge: TextStyle(fontSize: 18, color: Colors.white70),
         ),
         cardTheme: CardThemeData(
-          color: AppColors.cardBackground,
-          shape: AppStyles.cardShape,
+          color: const Color(0xFF1E1E1E),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           elevation: 0,
           margin: EdgeInsets.zero,
         ),
       ),
-      themeMode: themeProvider.themeMode,
-      onGenerateRoute: (settings) {
-        try {
-          WidgetBuilder? builder;
-          switch (settings.name) {
-            case '/':
-              builder = (_) => const WelcomeScreen();
-              break;
-            case '/selection':
-              builder = (_) => const SelectionScreen();
-              break;
-            case '/add_passwords':
-              builder = (_) => const PasswordsScreen();
-              break;
-            case '/add_files':
-              builder = (_) => const AddFilesScreen();
-              break;
-            case '/settings':
-              builder = (_) => const SettingsScreen();
-              break;
-            case '/messages':
-              builder = (_) => const MessagesScreen();
-              break;
-            case '/media':
-              builder = (_) => const MediaScreen();
-              break;
-            case '/recipients':
-              builder = (_) => const RecipientsScreen();
-              break;
-            default:
-              builder = (_) => Scaffold(
-                appBar: AppBar(title: const Text('Ошибка')),
-                body: Center(
-                  child: Text('Маршрут "${settings.name}" не найден'),
-                ),
-              );
-          }
-
-          return PageRouteBuilder(
-            pageBuilder: (context, _, __) => builder!(context),
-            transitionsBuilder: (context, animation, _, child) {
-              const begin = Offset(0.0, 0.1);
-              const end = Offset.zero;
-              const curve = Curves.easeInOut;
-              var tween = Tween(
-                begin: begin,
-                end: end,
-              ).chain(CurveTween(curve: curve));
-              return SlideTransition(
-                position: animation.drive(tween),
-                child: FadeTransition(opacity: animation, child: child),
-              );
-            },
-          );
-        } catch (e) {
-          return MaterialPageRoute(
-            builder: (_) => Scaffold(
-              appBar: AppBar(title: const Text('Ошибка')),
-              body: const Center(
-                child: Text('Произошла ошибка при открытии страницы'),
-              ),
-            ),
-          );
-        }
+      initialRoute: '/welcome',
+      routes: {
+        '/welcome': (context) => const WelcomeScreen(),
+        '/auth': (context) => const AuthGateScreen(),
+        '/pin': (context) => const PinCodeScreen(),
+        '/selection': (context) => const SelectionScreen(),
+        '/add_passwords': (context) => const PasswordsScreen(),
+        '/messages': (context) => const MessagesScreen(),
+        '/media': (context) => const MediaScreen(),
+        '/recipients': (context) => const RecipientsScreen(),
+        '/settings': (context) => const SettingsScreen(),
+      },
+      onUnknownRoute: (settings) {
+        return MaterialPageRoute(
+          builder: (context) => Scaffold(
+            body: Center(child: Text('Страница ${settings.name} не найдена')),
+          ),
+        );
       },
     );
   }

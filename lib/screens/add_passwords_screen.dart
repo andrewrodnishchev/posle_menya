@@ -125,6 +125,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
   }
 
   Widget _buildTextField(
+    BuildContext context,
     TextEditingController controller,
     String label, {
     bool obscure = false,
@@ -155,43 +156,262 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
   }
 
   void _showAddPasswordScreen() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          appBar: AppBar(
-            title: const Text('Добавить пароль'),
-            actions: [
-              IconButton(icon: const Icon(Icons.check), onPressed: _addEntry),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).cardTheme.color,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 16,
+          right: 16,
+          top: 16,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Card(
+                margin: EdgeInsets.zero,
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: isDark
+                        ? Theme.of(context).colorScheme.outline.withOpacity(0.5)
+                        : Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.2),
+                    width: 1.5,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        Text(
+                          'Добавить пароль',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        _buildTextField(context, _serviceController, 'Сервис'),
+                        const SizedBox(height: 16),
+                        _buildTextField(
+                          context,
+                          _loginController,
+                          'Логин',
+                          keyboardType: TextInputType.emailAddress,
+                        ),
+                        const SizedBox(height: 16),
+                        _buildTextField(
+                          context,
+                          _passwordController,
+                          'Пароль',
+                          obscure: true,
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.pop(context),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface.withAlpha(127),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Отмена',
+                                  style: TextStyle(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: _addEntry,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
+                                  foregroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text('Сохранить'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
             ],
           ),
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  _buildTextField(_serviceController, 'Сервис'),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    _loginController,
-                    'Логин',
-                    keyboardType: TextInputType.emailAddress,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordCard(
+    BuildContext context,
+    PasswordEntry entry,
+    int index,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isDark
+              ? Theme.of(context).colorScheme.outline.withOpacity(0.5)
+              : Theme.of(context).colorScheme.primary.withOpacity(0.2),
+          width: 1.5,
+        ),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => _showPasswordDetails(index),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: isDark
+                ? null
+                : LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Theme.of(context).colorScheme.surface,
+                      Theme.of(context).colorScheme.surface.withOpacity(0.9),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  _buildTextField(_passwordController, 'Пароль', obscure: true),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: _addEntry,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                      minimumSize: const Size(double.infinity, 50),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withOpacity(0.3),
+                        width: 1,
+                      ),
                     ),
-                    child: const Text('Сохранить'),
+                    child: Icon(
+                      Icons.lock_outline,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      entry.service,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      _passwordVisible[index]
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.6),
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _passwordVisible[index] = !_passwordVisible[index];
+                      });
+                    },
                   ),
                 ],
               ),
-            ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Логин: ${entry.login}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Пароль: ${_passwordVisible[index] ? entry.password : '••••••••'}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(180),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Создано: ${entry.createdAt.day}.${entry.createdAt.month}.${entry.createdAt.year}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(127),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -200,65 +420,125 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
 
   void _showPasswordDetails(int index) {
     final entry = _passwordsBox.getAt(index)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Theme.of(context).cardTheme.color,
       builder: (context) => Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: Text(
-                entry.service,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
+            Card(
+              margin: EdgeInsets.zero,
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: isDark
+                      ? Theme.of(context).colorScheme.outline.withOpacity(0.5)
+                      : Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                  width: 1.5,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.lock_outline,
+                            color: Theme.of(context).colorScheme.primary,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            entry.service,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    _buildDetailRow('Логин', entry.login),
+                    const SizedBox(height: 12),
+                    _buildDetailRow('Пароль', entry.password),
+                    const SizedBox(height: 12),
+                    _buildDetailRow(
+                      'Создано',
+                      '${entry.createdAt.day}.${entry.createdAt.month}.${entry.createdAt.year}',
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withAlpha(127),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              'Закрыть',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _deleteEntry(index);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text('Удалить'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            _buildDetailRow('Логин', entry.login),
-            const SizedBox(height: 12),
-            _buildDetailRow('Пароль', entry.password),
-            const SizedBox(height: 12),
-            _buildDetailRow(
-              'Создано',
-              '${entry.createdAt.day}.${entry.createdAt.month}.${entry.createdAt.year}',
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withAlpha(127),
-                      ),
-                    ),
-                    child: const Text('Закрыть'),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      _deleteEntry(index);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                    ),
-                    child: const Text('Удалить'),
-                  ),
-                ),
-              ],
-            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -272,7 +552,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
         Text(
           label,
           style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface.withAlpha(127),
+            color: Theme.of(context).colorScheme.onSurface.withAlpha(180),
             fontSize: 14,
           ),
         ),
@@ -302,21 +582,50 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Пароли и логины'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Пароли и логины',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        centerTitle: true,
         actions: [
           if (!_isLoading && _passwordsBox.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.delete_outline),
+              icon: Icon(
+                Icons.delete_outline,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
               onPressed: () {
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text('Удалить все пароли?'),
-                    content: const Text('Это действие нельзя отменить'),
+                    title: Text(
+                      'Удалить все пароли?',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    content: Text(
+                      'Это действие нельзя отменить',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    backgroundColor: Theme.of(context).cardTheme.color,
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Отмена'),
+                        child: Text(
+                          'Отмена',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
                       ),
                       TextButton(
                         onPressed: () {
@@ -374,72 +683,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                   itemCount: box.length,
                   itemBuilder: (context, index) {
                     final entry = box.getAt(index)!;
-                    return Card(
-                      color: Theme.of(context).cardTheme.color,
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        leading: Icon(
-                          Icons.lock_outline,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        title: Text(
-                          entry.service,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              entry.login,
-                              style: TextStyle(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withAlpha(180),
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    _passwordVisible[index]
-                                        ? entry.password
-                                        : '••••••••',
-                                    style: TextStyle(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurface.withAlpha(180),
-                                    ),
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: Icon(
-                                    _passwordVisible[index]
-                                        ? Icons.visibility_off
-                                        : Icons.visibility,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurface.withAlpha(127),
-                                    size: 20,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _passwordVisible[index] =
-                                          !_passwordVisible[index];
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        onTap: () => _showPasswordDetails(index),
-                      ),
-                    );
+                    return _buildPasswordCard(context, entry, index);
                   },
                 );
               },
